@@ -1,4 +1,3 @@
-import subprocess
 import os, shutil
 from openpyxl import load_workbook, Workbook
 from copy import copy
@@ -35,7 +34,7 @@ def convert_xls_to_xlsx(input_path):
             "libreoffice",
             "--headless",
             "--convert-to", "xlsx",
-            "--outdir", os.path.dirname("./"),
+            "--outdir", os.path.dirname("../utils/"),
             input_path
         ], check=True)
         return True
