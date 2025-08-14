@@ -5,8 +5,6 @@ from Database.db import Database
 from pars import download_and_generate_schedule
 from create_bot import bot
 import os
-
-get_photo_router = Router()
  
 
 async def scheduled_task():
