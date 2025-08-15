@@ -1,6 +1,6 @@
 from aiogram import Router, F, types
 from aiogram.filters import CommandStart
-import keyboards.keyboards_Inline as kb
+import app.keyboards.keyboards_Inline as kb
 
 start_router = Router()
 

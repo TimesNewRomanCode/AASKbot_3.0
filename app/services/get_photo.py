@@ -1,13 +1,14 @@
 import asyncio
 from datetime import datetime, time, timedelta
 from aiogram import Router, types, F
-from Database.db import Database
-from pars import download_and_generate_schedule
-from create_bot import bot
+
+from app.services.pars import download_and_generate_schedule
+from app.core.create_bot import bot
 import os
- 
+
 
 async def scheduled_task():
+    print('scheduled_task')
     """Задача отправки расписания в определённое время."""
     print("Запуск задачи...")
 
@@ -40,12 +41,11 @@ async def scheduled_task():
                 script_dir = os.path.dirname(os.path.abspath(__file__))
                 file_path = os.path.join(script_dir, "..", "output", f"{group_name}.png")
 
-                # Нормализуем путь (убираем `../`)
                 file_path = os.path.normpath(file_path)
 
                 today = datetime.now()
                 tomorrow = today + timedelta(days=1)
-                caption = tomorrow.strftime("%d.%m.%Y") 
+                caption = tomorrow.strftime("%d.%m.%Y")
 
                 print(file_path)
                 try:
@@ -59,10 +59,9 @@ async def scheduled_task():
         print(f"Ошибка при получении данных из базы: {e}")
     finally:
         execution_time = datetime.now() - start_time
-        print(f"Время выполнения: {execution_time}") 
+        print(f"Время выполнения: {execution_time}")
 
 
 async def run_scheduler():
-    """Запуск планировщика."""
     while True:
         await scheduled_task()

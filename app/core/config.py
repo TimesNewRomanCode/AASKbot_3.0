@@ -20,6 +20,7 @@ class Settings(BaseSettings):
         parts = v.split(":")
         if len(parts) != 2:
             raise ValueError("Token must be in format '<bot_id>:<bot_key>'")
+        return v
 
 
     model_config = SettingsConfigDict(

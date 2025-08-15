@@ -2,12 +2,13 @@ import os, shutil
 from openpyxl import load_workbook, Workbook
 from copy import copy
 import xlrd
-from Database.db import GROUP_NAMES
+# from Database.db import GROUP_NAMES
 from pdf2image import convert_from_path
 import requests
 from datetime import datetime, timedelta
 from openpyxl.styles import Border, Side
 
+GROUP_NAMES = 1
 
 async def download_and_generate_schedule():
     today = datetime.now()
