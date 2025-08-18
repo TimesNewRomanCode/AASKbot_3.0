@@ -38,7 +38,9 @@ async def handle_next_photo(message: types.Message, state: FSMContext):
     try:
         photo = message.photo[-1]
 
-        photo_file = await bot.download(photo)
+        # Скачиваем фото в память
+        file = await bot.download(photo)
+        photo_bytes = file.read()   # сразу читаем все байты
 
         async with AsyncSessionLocal() as session:
             group_ids = await get_all_group_ids(session)
@@ -49,7 +51,7 @@ async def handle_next_photo(message: types.Message, state: FSMContext):
                     await bot.send_photo(
                         chat_id=chat_id,
                         photo=types.BufferedInputFile(
-                            photo_file.read(),
+                            photo_bytes,  # используем одни и те же байты для всех
                             filename=f"schedule_{group_name}.jpg"
                         ),
                         caption=message.caption
