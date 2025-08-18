@@ -1,6 +1,8 @@
 import asyncio
 from datetime import datetime, time, timedelta
 from aiogram import Router, types, F
+from app.crud.aaskUser import get_all_group_ids
+from app.core.database import AsyncSessionLocal
 
 from app.services.pars import download_and_generate_schedule
 from app.core.create_bot import bot
@@ -9,10 +11,9 @@ import os
 
 async def scheduled_task():
     print('scheduled_task')
-    """Задача отправки расписания в определённое время."""
     print("Запуск задачи...")
 
-    target_time = time(17, 58)
+    target_time = time(17, 55)
     now = datetime.now()
     next_run = datetime.combine(now.date(), target_time)
 
@@ -29,12 +30,11 @@ async def scheduled_task():
 
     await asyncio.sleep(delay)
 
-    db = Database()
     await download_and_generate_schedule()
     try:
         start_time = datetime.now()
-        async with db:
-            group_ids = await db.get_all_group_ids()
+        async with AsyncSessionLocal() as session:
+            group_ids = await get_all_group_ids(session)
             for group in group_ids:
                 chat_id = group["chat_id"]
                 group_name = group["group_name"]
@@ -54,7 +54,6 @@ async def scheduled_task():
                     print(f"Расписание для группы {group_name} отправлено в чат {chat_id}.")
                 except Exception as e:
                     print(f"Ошибка при отправке расписания для группы {group_name}: {e}")
-        print(f"Рассылка заняла {general_time}")
     except Exception as e:
         print(f"Ошибка при получении данных из базы: {e}")
     finally:

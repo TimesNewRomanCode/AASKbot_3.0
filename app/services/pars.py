@@ -1,33 +1,65 @@
-import os, shutil
+import shutil
 from openpyxl import load_workbook, Workbook
 from copy import copy
-import xlrd
-# from Database.db import GROUP_NAMES
+import os, json, subprocess, xlrd
 from pdf2image import convert_from_path
 import requests
 from datetime import datetime, timedelta
 from openpyxl.styles import Border, Side
 
-GROUP_NAMES = 1
+
+GROUP_NAMES = []
+
+GROUPS_FILE = "groups.json"
+
+def save_groups_to_file(groups):
+    with open(GROUPS_FILE, "w", encoding="utf-8") as f:
+        json.dump(groups, f, ensure_ascii=False, indent=2)
+
+def load_groups_from_file():
+    if os.path.exists(GROUPS_FILE):
+        with open(GROUPS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
 
 async def download_and_generate_schedule():
     today = datetime.now()
-    day_of_week = today.weekday()
-
-    if day_of_week == 6:  # Воскресенье
-        target_day = today + timedelta(days=1)
-    else:
-        target_day = today + timedelta(days=1)
+    target_day = today + timedelta(days=1)
 
     day_month = int(target_day.strftime("%d%m"))
-    url = f"https://altask.ru/images/raspisanie/DO/{day_month}.xls"
+    url = f"https://altask.ru/images/raspisanie/DO/{2706}.xls"
+    # url = f"//home/roman/PycharmProjects/AASKbot/2706.xls"
     response = requests.get(url)
     if response.status_code != 200:
         raise Exception(f"Не удалось скачать файл по ссылке: {url}")
-    file_path = f"{day_month}.xls"
+    file_path = f"{2706}.xls"
     with open(file_path, "wb") as f:
         f.write(response.content)
+
+    global GROUP_NAMES
+    GROUP_NAMES = extract_group_names_from_xls(file_path)
+
+    print(f"[INFO] Найдено групп: {len(GROUP_NAMES)}")
     parse_and_generate_tables(file_path)
+
+
+
+def extract_group_names_from_xls(file_path):
+    import re, xlrd
+    group_pattern = re.compile(r'^[А-Яа-яA-Za-z]+-\d{2}$')
+    group_names = set()
+
+    workbook = xlrd.open_workbook(file_path)
+    sheet = workbook.sheet_by_index(0)
+    for y in range(sheet.nrows):
+        for x in range(sheet.ncols):
+            value = str(sheet.cell_value(y, x)).strip()
+            if group_pattern.match(value):
+                group_names.add(value)
+
+    groups = sorted(group_names)
+    save_groups_to_file(groups)
+    return groups
 
 def convert_xls_to_xlsx(input_path):
     try:
@@ -35,7 +67,7 @@ def convert_xls_to_xlsx(input_path):
             "libreoffice",
             "--headless",
             "--convert-to", "xlsx",
-            "--outdir", os.path.dirname("../utils/"),
+            "--outdir", os.path.dirname("./"),
             input_path
         ], check=True)
         return True
@@ -68,9 +100,7 @@ def read_xls_file(file_path):
         print(f"[!] Ошибка чтения .xls: {e}")
         return None
 
-from pdf2image import convert_from_path
-import subprocess
-import os
+
 
 def create_group_sheets_single_column(groups, source_sheet, output_dir):
     os.makedirs(output_dir, exist_ok=True)
@@ -147,7 +177,7 @@ def create_group_sheets_single_column(groups, source_sheet, output_dir):
     print(f"группы сохранены в {output_dir}")
 
 def parse_and_generate_tables(INPUT_XLS):
-    output_dir = "./output"
+    output_dir = "./app/output"
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
     convert_xls_to_xlsx(INPUT_XLS)

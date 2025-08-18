@@ -8,6 +8,7 @@
 /.vscode/
 /.vs/
 /.venv/
+/app/output/
 
 
 # Игнорируемые файлы
