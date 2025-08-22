@@ -1,50 +1,36 @@
 import shutil
 from openpyxl import load_workbook, Workbook
 from copy import copy
-import os, json, subprocess, xlrd
+import os, subprocess, xlrd
 from pdf2image import convert_from_path
 import requests
 from datetime import datetime, timedelta
 from openpyxl.styles import Border, Side
+from app.services.groups import up_groups
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 GROUP_NAMES = []
-
-GROUPS_FILE = "groups.json"
-
-def save_groups_to_file(groups):
-    with open(GROUPS_FILE, "w", encoding="utf-8") as f:
-        json.dump(groups, f, ensure_ascii=False, indent=2)
-
-def load_groups_from_file():
-    if os.path.exists(GROUPS_FILE):
-        with open(GROUPS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
 
 async def download_and_generate_schedule():
     today = datetime.now()
     target_day = today + timedelta(days=1)
 
     day_month = int(target_day.strftime("%d%m"))
-    url = f"https://altask.ru/images/raspisanie/DO/{2706}.xls"
-    # url = f"//home/roman/PycharmProjects/AASKbot/2706.xls"
+    url = f"https://altask.ru/images/raspisanie/DO/{day_month}.xls"
     response = requests.get(url)
     if response.status_code != 200:
         raise Exception(f"Не удалось скачать файл по ссылке: {url}")
-    file_path = f"{2706}.xls"
-    with open(file_path, "wb") as f:
-        f.write(response.content)
+    else:
+        file_path = f"{2706}.xls"
+        with open(file_path, "wb") as f:
+            f.write(response.content)
 
-    global GROUP_NAMES
-    GROUP_NAMES = extract_group_names_from_xls(file_path)
-
-    print(f"[INFO] Найдено групп: {len(GROUP_NAMES)}")
-    parse_and_generate_tables(file_path)
+        parse_and_generate_tables()
 
 
 
-def extract_group_names_from_xls(file_path):
+async def extract_group_names_from_xls(file_path):
     import re, xlrd
     group_pattern = re.compile(r'^[А-Яа-яA-Za-z]+-\d{2}$')
     group_names = set()
@@ -57,9 +43,15 @@ def extract_group_names_from_xls(file_path):
             if group_pattern.match(value):
                 group_names.add(value)
 
-    groups = sorted(group_names)
-    save_groups_to_file(groups)
-    return groups
+    GROUP_NAMES = list(group_names)
+
+    async with AsyncSession() as session:
+        await up_groups(
+            session=session,
+            groups=GROUP_NAMES
+        )
+
+    return  print(f"[INFO] Найдено групп: {len(GROUP_NAMES)} и добавлено в таблицу")
 
 def convert_xls_to_xlsx(input_path):
     try:

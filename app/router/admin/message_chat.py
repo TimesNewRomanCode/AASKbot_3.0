@@ -3,12 +3,15 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from app.core.database import AsyncSessionLocal
+import os
+from dotenv import load_dotenv
 
 from app.core.create_bot import bot
 from app.crud.aaskUser import get_all_group_ids
 
-message_chat_all_router = Router()
+load_dotenv()
 
+message_chat_all_router = Router()
 
 class WaitForMessage(StatesGroup):
     waiting = State()
@@ -16,7 +19,8 @@ class WaitForMessage(StatesGroup):
 @message_chat_all_router.message(Command("messageAll"))
 async def message_chat(message: types.Message, state: FSMContext):
 
-    YOUR_CHAT_ID = 1529963230
+    YOUR_CHAT_ID = os.getenv('YOUR_CHAT_ID')
+    YOUR_CHAT_ID = int(YOUR_CHAT_ID)
 
     if message.chat.id == YOUR_CHAT_ID:
         await state.set_state(WaitForMessage.waiting)

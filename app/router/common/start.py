@@ -1,11 +1,12 @@
-from aiogram import Router, F, types
+from aiogram import Router, types
 from aiogram.filters import CommandStart
-import app.keyboards.keyboards_Inline as kb
+from app.keyboards.keyboards_Inline import get_inline_kb
+from sqlalchemy.ext.asyncio import AsyncSession
 
 start_router = Router()
 
+
 @start_router.message(CommandStart())
-async def message_handler(message: types.Message):
-    await message.reply("Из какой вы группы?", reply_markup=kb.inline_kb1)
-
-
+async def message_handler(message: types.Message, session: AsyncSession):
+    kb = await get_inline_kb(session)  # создаем клавиатуру тут
+    await message.reply("Из какой вы группы?", reply_markup=kb)

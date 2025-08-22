@@ -1,10 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_session
 from app.models.aaskUsers import aaskUsers
 from datetime import datetime
 from sqlalchemy import select
-from app.services.pars import load_groups_from_file
+from app.services.groups import select_groups
 
-GROUP_NAMES = load_groups_from_file()
+
 
 async def create_user(session: AsyncSession,chat_id: int, group_name: str, username: str, date_registr: datetime):
     result = await session.execute(
@@ -30,9 +32,10 @@ async def create_user(session: AsyncSession,chat_id: int, group_name: str, usern
     return user
 
 async def get_all_group_ids(session: AsyncSession):
+    group = await select_groups(session)
     query = (
         select(aaskUsers.chat_id, aaskUsers.group_name)
-        .where(aaskUsers.group_name.in_(GROUP_NAMES))
+        .where(aaskUsers.group_name.in_(group))
     )
     result = await session.execute(query)
     return result.mappings().all()

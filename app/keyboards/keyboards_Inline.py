@@ -1,9 +1,13 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from app.services.pars import load_groups_from_file
+from app.services.groups import select_groups
+from sqlalchemy.ext.asyncio import AsyncSession
 
-GROUP_NAMES = load_groups_from_file()
 
-buttons = [InlineKeyboardButton(text=group, callback_data=f"btn_{group}") for group in GROUP_NAMES]
+async def get_inline_kb(session: AsyncSession) -> InlineKeyboardMarkup:
+    groups = await select_groups(session)
+    if not groups:
+        groups = ["Нет групп"]
 
-keyboard_layout = [buttons[i:i + 4] for i in range(0, len(buttons), 4)]
-inline_kb1 = InlineKeyboardMarkup(inline_keyboard=keyboard_layout)
+    buttons = [InlineKeyboardButton(text=group, callback_data=f"btn_{group}") for group in groups]
+    keyboard_layout = [buttons[i:i + 4] for i in range(0, len(buttons), 4)]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard_layout)

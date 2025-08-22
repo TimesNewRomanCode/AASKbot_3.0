@@ -17,4 +17,5 @@ async def yes(message: types.Message, state: FSMContext, session: AsyncSession):
             group_name=group_name,
             username=message.from_user.username or "unknown"
         )
+        print(f"Новый пользователь", message.from_user.username)
         await message.answer(f"Теперь вы будете получать расписание своей группы {group_name}", reply_markup=ReplyKeyboardRemove())

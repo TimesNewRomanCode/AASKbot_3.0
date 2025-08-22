@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 from app.core.config import settings
 from app.models import *  # noqa F403
-from app.models.aaskUsers import aaskUsers
+from app.models.base import Base
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -20,9 +20,7 @@ if not DATABASE_URL:
 
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
-
-target_metadata = aaskUsers.metadata  # noqa F405
-
+target_metadata = Base.metadata  # noqa F405
 
 def run_migrations_offline():
     context.configure(
