@@ -12,3 +12,5 @@ RUN pip install --upgrade pip \
     && poetry install --no-root --no-interaction
 
 COPY .. /app
+
+RUN python3 main.py
