@@ -4,7 +4,7 @@ from app.models import aaskUsers, groups
 from app.crud.groups import get_group_by_name
 
 
-async def create_user(session: AsyncSession, chat_id: int, group_name: str, username: str):
+async def create_user(session: AsyncSession, chat_id: str, group_name: str, username: str):
     # Получаем группу
     group = await get_group_by_name(session, group_name)
     if not group:
@@ -12,7 +12,7 @@ async def create_user(session: AsyncSession, chat_id: int, group_name: str, user
 
     # Проверяем существующего пользователя
     existing_user = await session.execute(
-        select(aaskUsers).where(aaskUsers.chat_id == chat_id)
+        select(aaskUsers).where(aaskUsers.chat_id == str(chat_id))
     )
     existing_user = existing_user.scalar_one_or_none()
 
