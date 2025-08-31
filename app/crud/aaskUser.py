@@ -25,7 +25,7 @@ async def create_user(session: AsyncSession, chat_id: int, group_name: str, user
     else:
         # Создаем нового пользователя
         user = aaskUsers(
-            chat_id=chat_id,
+            chat_id=str(chat_id),
             group_sid=group.sid,
             username=username
         )
