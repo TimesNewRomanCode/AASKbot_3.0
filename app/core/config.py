@@ -22,13 +22,6 @@ class Settings(BaseSettings):
             f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
 
-    @field_validator("DATABASE_URL")
-    @classmethod
-    def validate_database_url(cls, v: str) -> str:
-        if not v.startswith("postgresql+asyncpg://"):
-            raise ValueError("Must use asyncpg driver")
-        return v
-
     @field_validator("BOT_TOKEN")
     @classmethod
     def validate_telegram_bot_token(cls, v: str) -> str:

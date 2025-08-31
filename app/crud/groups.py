@@ -21,3 +21,10 @@ async def add_single_group(session: AsyncSession, group_name: str) -> groups:
     await session.refresh(new_group)
     return new_group
 
+async def get_group_by_name(session: AsyncSession, group_name: str):
+    result = await session.execute(select(groups).where(groups.name == group_name))
+    return result.scalar_one_or_none()
+
+async def get_group_by_sid(session: AsyncSession, group_sid: str):
+    result = await session.execute(select(groups).where(groups.sid == group_sid))
+    return result.scalar_one_or_none()

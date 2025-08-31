@@ -8,5 +8,5 @@ from .base import Base
 class groups(Base):
     __tablename__ = "groups"
 
-    name: Mapped[str] = mapped_column(String, primary_key=True, index=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, index=True)
+    name: Mapped[str] = mapped_column(String, index=True)
+    is_active: Mapped[bool] = mapped_column(Boolean,default=True, index=True)

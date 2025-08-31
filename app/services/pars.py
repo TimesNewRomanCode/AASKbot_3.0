@@ -7,8 +7,7 @@ import requests
 from datetime import datetime, timedelta
 from openpyxl.styles import Border, Side
 from app.services.groups import up_groups
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.core.database import AsyncSessionLocal
 
 GROUP_NAMES = []
 
@@ -17,19 +16,17 @@ async def download_and_generate_schedule():
     target_day = today + timedelta(days=1)
 
     day_month = int(target_day.strftime("%d%m"))
-    url = f"https://altask.ru/images/raspisanie/DO/{109}.xls"
+    url = f"https://altask.ru/images/raspisanie/DO/{day_month}.xls"
     response = requests.get(url)
     if response.status_code != 200:
         raise Exception(f"Не удалось скачать файл по ссылке: {url}")
     else:
-        file_path = f"{109}.xls"
+        file_path = f"{day_month}.xls"
         with open(file_path, "wb") as f:
             f.write(response.content)
 
         await extract_group_names_from_xls(file_path)
-        parse_and_generate_tables(file_path)
-
-
+    parse_and_generate_tables(file_path)
 
 
 async def extract_group_names_from_xls(file_path):
@@ -45,15 +42,18 @@ async def extract_group_names_from_xls(file_path):
             if group_pattern.match(value):
                 group_names.add(value)
 
+    global GROUP_NAMES
+
     GROUP_NAMES = list(group_names)
 
-    async with AsyncSession() as session:
+    async with AsyncSessionLocal() as session:
         await up_groups(
             session=session,
             groups=GROUP_NAMES
         )
 
     return  print(f"[INFO] Найдено групп: {len(GROUP_NAMES)} и добавлено в таблицу")
+
 
 def convert_xls_to_xlsx(input_path):
     try:
