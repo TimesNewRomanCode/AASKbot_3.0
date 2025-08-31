@@ -7,7 +7,7 @@ from .base import Base
 class aaskUsers(Base):
     __tablename__ = "aaskUsers"
 
-    chat_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    chat_id: Mapped[str] = mapped_column(String,unique=True, primary_key=True, index=True)
     group_sid: Mapped[UUID] = mapped_column(UUID, ForeignKey("groups.sid", ondelete="CASCADE"), nullable=False)
     username: Mapped[str] = mapped_column(String, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
