@@ -17,16 +17,18 @@ async def download_and_generate_schedule():
     target_day = today + timedelta(days=1)
 
     day_month = int(target_day.strftime("%d%m"))
-    url = f"https://altask.ru/images/raspisanie/DO/{day_month}.xls"
+    url = f"https://altask.ru/images/raspisanie/DO/{109}.xls"
     response = requests.get(url)
     if response.status_code != 200:
         raise Exception(f"Не удалось скачать файл по ссылке: {url}")
     else:
-        file_path = f"{2706}.xls"
+        file_path = f"{109}.xls"
         with open(file_path, "wb") as f:
             f.write(response.content)
 
-        parse_and_generate_tables()
+        await extract_group_names_from_xls(file_path)
+        parse_and_generate_tables(file_path)
+
 
 
 

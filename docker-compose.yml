@@ -1,11 +1,11 @@
-version: '3.8'
-
 services:
-
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    depends_on:
+      - postgres
+
   postgres:
     image: postgres:15
     environment:
@@ -16,6 +16,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    command: postgres -c listen_addresses='*'
 
 volumes:
   postgres_data:

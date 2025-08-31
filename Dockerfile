@@ -4,13 +4,13 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y build-essential libpq-dev
 
-COPY ../pyproject.toml ../poetry.lock /app/
+COPY pyproject.toml ../poetry.lock ./
 
 RUN pip install --upgrade pip \
     && pip install poetry \
     && poetry config virtualenvs.create false \
     && poetry install --no-root --no-interaction
 
-COPY .. /app
+COPY . .
 
-RUN python3 main.py
+CMD ["python", "main.py"]
