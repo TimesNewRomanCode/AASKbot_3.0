@@ -158,7 +158,7 @@ def create_group_sheets_single_column(groups, source_sheet, output_dir):
             if images:
                 img = images[0]
                 width, height = img.size
-                cropped = img.crop((100, 100, width - 150, height - 400))
+                cropped = img.crop((100, 100, width - 100, height - 400))
                 cropped.save(os.path.join(output_dir, f"{name}.png"), "PNG")
 
             os.remove(xlsx_path)

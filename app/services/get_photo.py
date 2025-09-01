@@ -13,7 +13,7 @@ async def scheduled_task():
     print('scheduled_task')
     print("Запуск задачи...")
 
-    target_time = time(17, 57)
+    target_time = time(10, 57)
     now = datetime.now()
     next_run = datetime.combine(now.date(), target_time)
 
