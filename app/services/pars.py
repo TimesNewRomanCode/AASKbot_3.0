@@ -42,9 +42,11 @@ async def extract_group_names_from_xls(file_path):
             if group_pattern.match(value):
                 group_names.add(value)
 
+    sorted_group_names = sorted(group_names, key=lambda x: x.lower())
+
     global GROUP_NAMES
 
-    GROUP_NAMES = list(group_names)
+    GROUP_NAMES = list(sorted_group_names)
 
     async with AsyncSessionLocal() as session:
         await up_groups(
@@ -158,12 +160,16 @@ def create_group_sheets_single_column(groups, source_sheet, output_dir):
             if images:
                 img = images[0]
                 width, height = img.size
-                cropped = img.crop((100, 100, width - 100, height - 400))
+                top_bottom_crop = 100  # одинаково сверху и снизу
+                left_right_crop = 300  # слева и справа (можете изменить)
+
+                cropped = img.crop((left_right_crop, top_bottom_crop,
+                                    width - left_right_crop, height - top_bottom_crop))
                 cropped.save(os.path.join(output_dir, f"{name}.png"), "PNG")
 
             os.remove(xlsx_path)
             os.remove(pdf_path)
-            
+
         except Exception as e:
             print(f"[!] Ошибка при конвертации файлов для группы {name}: {e}")
             continue
