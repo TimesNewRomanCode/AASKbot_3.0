@@ -13,13 +13,14 @@ load_dotenv()
 
 message_chat_all_router = Router()
 
+
 class WaitForMessage(StatesGroup):
     waiting = State()
 
+
 @message_chat_all_router.message(Command("messageAll"))
 async def message_chat(message: types.Message, state: FSMContext):
-
-    YOUR_CHAT_ID = os.getenv('YOUR_CHAT_ID')
+    YOUR_CHAT_ID = os.getenv("YOUR_CHAT_ID")
     YOUR_CHAT_ID = int(YOUR_CHAT_ID)
 
     if message.chat.id == YOUR_CHAT_ID:
@@ -28,6 +29,7 @@ async def message_chat(message: types.Message, state: FSMContext):
 
     else:
         await message.reply("Соси")
+
 
 @message_chat_all_router.message(WaitForMessage.waiting, F.text)
 async def handle_next_message(message: types.Message, state: FSMContext):
@@ -45,9 +47,13 @@ async def handle_next_message(message: types.Message, state: FSMContext):
                     group_name = group["group_name"]
                     try:
                         await bot.send_message(chat_id, user_message)
-                        print(f"Сообщение пользователю из {group_name} отправлено в чат {chat_id}.")
+                        print(
+                            f"Сообщение пользователю из {group_name} отправлено в чат {chat_id}."
+                        )
                     except Exception as e:
-                        print(f"Ошибка при отправке сообщения для группы {group_name}: {e}")
+                        print(
+                            f"Ошибка при отправке сообщения для группы {group_name}: {e}"
+                        )
         except Exception as e:
             print(f"Ошибка при получении данных из базы: {e}")
         await state.clear()

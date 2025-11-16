@@ -32,7 +32,9 @@ async def send_schedules():
                 chat_id = group["chat_id"]
                 group_name = group["group_name"]
                 script_dir = os.path.dirname(os.path.abspath(__file__))
-                file_path = os.path.join(script_dir, "..", "output", f"{group_name}.png")
+                file_path = os.path.join(
+                    script_dir, "..", "output", f"{group_name}.png"
+                )
                 file_path = os.path.normpath(file_path)
 
                 if not os.path.exists(file_path):
@@ -43,7 +45,9 @@ async def send_schedules():
                 caption = f"Расписание на {tomorrow}"
 
                 try:
-                    await bot.send_photo(chat_id, types.FSInputFile(file_path), caption=caption)
+                    await bot.send_photo(
+                        chat_id, types.FSInputFile(file_path), caption=caption
+                    )
                     print(f"Расписание для {group_name} отправлено в чат {chat_id}")
 
                 except Exception as e:
@@ -68,7 +72,7 @@ def get_next_valid_day(target_time):
 
 
 async def scheduled_task():
-    print('ЗАПУСК ЗАДАЧИ РАСПИСАНИЯ')
+    print("ЗАПУСК ЗАДАЧИ РАСПИСАНИЯ")
 
     start_time_today = time(6, 0)
     now = datetime.now()
@@ -93,7 +97,9 @@ async def scheduled_task():
     if now.time() < start_time_today:
         next_run = datetime.combine(now.date(), start_time_today)
         wait_seconds = (next_run - now).total_seconds()
-        print(f"Ожидание начала попыток скачивания: {wait_seconds // 3600:.0f}ч {(wait_seconds % 3600) // 60:.0f}м")
+        print(
+            f"Ожидание начала попыток скачивания: {wait_seconds // 3600:.0f}ч {(wait_seconds % 3600) // 60:.0f}м"
+        )
         await asyncio.sleep(wait_seconds)
 
     print("Начинаем попытки скачивания...")

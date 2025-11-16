@@ -25,12 +25,14 @@ class WaitForMessage(StatesGroup):
 
 @photo_chat_all_router.message(Command("photoAll"))
 async def message_chat(message: types.Message, state: FSMContext):
-    YOUR_CHAT_ID = os.getenv('YOUR_CHAT_ID')
+    YOUR_CHAT_ID = os.getenv("YOUR_CHAT_ID")
     YOUR_CHAT_ID = int(YOUR_CHAT_ID)
 
     if message.chat.id == YOUR_CHAT_ID:
         await state.set_state(WaitForMessage.waiting)
-        await message.reply("Отправь фото (можно несколько), оно отправится всем. Напиши /stop когда закончишь.")
+        await message.reply(
+            "Отправь фото (можно несколько), оно отправится всем. Напиши /stop когда закончишь."
+        )
     else:
         await message.reply("Соси")
 
@@ -43,7 +45,9 @@ async def handle_media_group(message: types.Message, state: FSMContext):
         media_groups[media_group_id] = []
         asyncio.create_task(process_media_group_with_delay(media_group_id, state))
 
-    if not any(msg.message_id == message.message_id for msg in media_groups[media_group_id]):
+    if not any(
+        msg.message_id == message.message_id for msg in media_groups[media_group_id]
+    ):
         media_groups[media_group_id].append(message)
 
 
@@ -72,7 +76,9 @@ async def handle_single_photo(message: types.Message, state: FSMContext):
     await process_and_send_photos([message], message.caption, state)
 
 
-async def process_and_send_photos(messages: List[types.Message], caption: str, state: FSMContext):
+async def process_and_send_photos(
+    messages: List[types.Message], caption: str, state: FSMContext
+):
     try:
         if messages:
             await messages[0].reply(f"Получил {len(messages)} фото")
@@ -83,10 +89,12 @@ async def process_and_send_photos(messages: List[types.Message], caption: str, s
                 photo = msg.photo[-1]
                 file = await bot.download(photo)
                 photo_bytes = file.read()
-                photos_data.append({
-                    'bytes': photo_bytes,
-                    'caption': caption if len(photos_data) == 0 else None
-                })
+                photos_data.append(
+                    {
+                        "bytes": photo_bytes,
+                        "caption": caption if len(photos_data) == 0 else None,
+                    }
+                )
 
         if not photos_data:
             if messages:
@@ -107,20 +115,20 @@ async def process_and_send_photos(messages: List[types.Message], caption: str, s
                         await bot.send_photo(
                             chat_id=chat_id,
                             photo=types.BufferedInputFile(
-                                photos_data[0]['bytes'],
-                                filename=f"photo_{group_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
+                                photos_data[0]["bytes"],
+                                filename=f"photo_{group_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg",
                             ),
-                            caption=photos_data[0]['caption']
+                            caption=photos_data[0]["caption"],
                         )
                     else:
                         media = []
                         for i, photo_data in enumerate(photos_data):
                             media_item = types.InputMediaPhoto(
                                 media=types.BufferedInputFile(
-                                    photo_data['bytes'],
-                                    filename=f"photo_{group_name}_{i + 1}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
+                                    photo_data["bytes"],
+                                    filename=f"photo_{group_name}_{i + 1}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg",
                                 ),
-                                caption=photo_data['caption'] if i == 0 else None
+                                caption=photo_data["caption"] if i == 0 else None,
                             )
                             media.append(media_item)
 
@@ -133,7 +141,9 @@ async def process_and_send_photos(messages: List[types.Message], caption: str, s
                     print(f"Ошибка при отправке фото для {group_name}: {str(e)}")
 
             if successful_sends > 0:
-                await messages[0].reply(f"Отправлено {len(photos_data)} фото в {successful_sends} групп")
+                await messages[0].reply(
+                    f"Отправлено {len(photos_data)} фото в {successful_sends} групп"
+                )
 
     except Exception as e:
         print(f"Общая ошибка: {str(e)}")

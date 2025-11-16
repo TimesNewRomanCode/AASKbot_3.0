@@ -22,5 +22,5 @@ class TimestampMixin:
     )
 
 
-class Base(DeclarativeBase, SIDMixin, TimestampMixin):
+class CoreModel(DeclarativeBase, SIDMixin, TimestampMixin):
     pass
