@@ -1,5 +1,5 @@
-from .base import Base
-from .aaskUsers import aaskUsers
-from .groups import groups
+from app.common.db.core_model import CoreModel
+from .AASKUsers import AASKUsers
+from .groups import Groups
 
-__all__ = ['Base', 'aaskUsers', 'groups']
+__all__ = ["CoreModel", "AASKUsers", "Groups"]

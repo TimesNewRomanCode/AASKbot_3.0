@@ -8,6 +8,9 @@ async def get_inline_kb(session: AsyncSession) -> InlineKeyboardMarkup:
     if not groups:
         groups = ["Нет групп"]
 
-    buttons = [InlineKeyboardButton(text=group, callback_data=f"btn_{group}") for group in groups]
-    keyboard_layout = [buttons[i:i + 4] for i in range(0, len(buttons), 4)]
+    buttons = [
+        InlineKeyboardButton(text=group, callback_data=f"btn_{group}")
+        for group in groups
+    ]
+    keyboard_layout = [buttons[i : i + 4] for i in range(0, len(buttons), 4)]
     return InlineKeyboardMarkup(inline_keyboard=keyboard_layout)

@@ -1,7 +1,9 @@
 import shutil
 from openpyxl import load_workbook, Workbook
 from copy import copy
-import os, subprocess, xlrd
+import os
+import subprocess
+import xlrd
 from pdf2image import convert_from_path
 import requests
 from datetime import datetime, timedelta
@@ -10,6 +12,7 @@ from app.services.groups import up_groups
 from app.core.database import AsyncSessionLocal
 
 GROUP_NAMES = []
+
 
 async def download_and_generate_schedule():
     today = datetime.now()
@@ -30,8 +33,10 @@ async def download_and_generate_schedule():
 
 
 async def extract_group_names_from_xls(file_path):
-    import re, xlrd
-    group_pattern = re.compile(r'^[А-Яа-яA-Za-z]+-\d{2}$')
+    import re
+    import xlrd
+
+    group_pattern = re.compile(r"^[А-Яа-яA-Za-z]+-\d{2}$")
     group_names = set()
 
     workbook = xlrd.open_workbook(file_path)
@@ -49,26 +54,29 @@ async def extract_group_names_from_xls(file_path):
     GROUP_NAMES = list(sorted_group_names)
 
     async with AsyncSessionLocal() as session:
-        await up_groups(
-            session=session,
-            groups=GROUP_NAMES
-        )
+        await up_groups(session=session, groups=GROUP_NAMES)
 
-    return  print(f"[INFO] Найдено групп: {len(GROUP_NAMES)} и добавлено в таблицу")
+    return print(f"[INFO] Найдено групп: {len(GROUP_NAMES)} и добавлено в таблицу")
 
 
 def convert_xls_to_xlsx(input_path):
     try:
-        subprocess.run([
-            "libreoffice",
-            "--headless",
-            "--convert-to", "xlsx",
-            "--outdir", os.path.dirname("./"),
-            input_path
-        ], check=True)
+        subprocess.run(
+            [
+                "libreoffice",
+                "--headless",
+                "--convert-to",
+                "xlsx",
+                "--outdir",
+                os.path.dirname("./"),
+                input_path,
+            ],
+            check=True,
+        )
         return True
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         return False
+
 
 def read_xls_file(file_path):
     result = []
@@ -81,21 +89,20 @@ def read_xls_file(file_path):
                 value = sheet.cell_value(y, x)
                 if value in GROUP_NAMES:
                     ly = y + 1
-                     # изза субботы снизу ебанутой до 40 клеток вниз уходит, пока поставил ограничение 13
-                    while ly - y < 13 and ly < sheet.nrows and sheet.cell_value(ly, x) not in GROUP_NAMES:
+                    # изза субботы снизу ебанутой до 40 клеток вниз уходит, пока поставил ограничение 13
+                    while (
+                        ly - y < 13
+                        and ly < sheet.nrows
+                        and sheet.cell_value(ly, x) not in GROUP_NAMES
+                    ):
                         ly += 1
                     if ly >= sheet.nrows:
                         ly = sheet.nrows - 1
-                    result.append({
-                        "group": value,
-                        "x": x,
-                        "y1": y + 1,
-                        "y2": ly})
+                    result.append({"group": value, "x": x, "y1": y + 1, "y2": ly})
         return result
     except Exception as e:
         print(f"[!] Ошибка чтения .xls: {e}")
         return None
-
 
 
 def create_group_sheets_single_column(groups, source_sheet, output_dir):
@@ -106,7 +113,6 @@ def create_group_sheets_single_column(groups, source_sheet, output_dir):
         y1 = group["y1"]
         y2 = group["y2"]
         name = group["group"]
-
 
         wb = Workbook()
         ws = wb.active
@@ -119,11 +125,15 @@ def create_group_sheets_single_column(groups, source_sheet, output_dir):
                 tgt_cell.font = copy(src_cell.font)
                 current_border = src_cell.border
                 mixed_border = Border(
-                    left=Side(style='medium'),
-                    right=Side(style='medium'),
-                    #TODO
-                    top=current_border.top if current_border.top else Side(style="thin", color="505050"),
-                    bottom=current_border.bottom if current_border.bottom else Side(style="thin", color="505050")
+                    left=Side(style="medium"),
+                    right=Side(style="medium"),
+                    # TODO
+                    top=current_border.top
+                    if current_border.top
+                    else Side(style="thin", color="505050"),
+                    bottom=current_border.bottom
+                    if current_border.bottom
+                    else Side(style="thin", color="505050"),
                 )
                 tgt_cell.border = mixed_border
                 tgt_cell.fill = copy(src_cell.fill)
@@ -132,30 +142,37 @@ def create_group_sheets_single_column(groups, source_sheet, output_dir):
                 tgt_cell.alignment = copy(src_cell.alignment)
 
         col_letter_src = source_sheet.cell(row=y1, column=x).column_letter
-        ws.column_dimensions['D'].width = max(source_sheet.column_dimensions[col_letter_src].width, 33,22)
+        ws.column_dimensions["D"].width = max(
+            source_sheet.column_dimensions[col_letter_src].width, 33, 22
+        )
 
         for row in range(y1, y2 + 1):
             if source_sheet.row_dimensions[row].height is not None:
-                ws.row_dimensions[row - y1 + 1].height = source_sheet.row_dimensions[row].height
+                ws.row_dimensions[row - y1 + 1].height = source_sheet.row_dimensions[
+                    row
+                ].height
 
         xlsx_path = os.path.join(output_dir, f"{name}.xlsx")
         wb.save(xlsx_path)
-        
-        try:
-            subprocess.run([
-                "libreoffice",
-                "--headless",
-                "--convert-to", "pdf",
-                "--outdir", output_dir,
-                xlsx_path
-            ], check=True)
-            pdf_path = os.path.join(output_dir, f"{name}.pdf")
-            
-            images = convert_from_path(pdf_path, dpi=300)
-            
-            png_path = os.path.join(output_dir, f"{name}.png")
 
-            #TODO tut obrezat
+        try:
+            subprocess.run(
+                [
+                    "libreoffice",
+                    "--headless",
+                    "--convert-to",
+                    "pdf",
+                    "--outdir",
+                    output_dir,
+                    xlsx_path,
+                ],
+                check=True,
+            )
+            pdf_path = os.path.join(output_dir, f"{name}.pdf")
+
+            images = convert_from_path(pdf_path, dpi=300)
+
+            # TODO tut obrezat
 
             if images:
                 img = images[0]
@@ -163,8 +180,14 @@ def create_group_sheets_single_column(groups, source_sheet, output_dir):
                 top_bottom_crop = 100  # одинаково сверху и снизу
                 left_right_crop = 300  # слева и справа (можете изменить)
 
-                cropped = img.crop((left_right_crop, top_bottom_crop,
-                                    width - left_right_crop, height - top_bottom_crop))
+                cropped = img.crop(
+                    (
+                        left_right_crop,
+                        top_bottom_crop,
+                        width - left_right_crop,
+                        height - top_bottom_crop,
+                    )
+                )
                 cropped.save(os.path.join(output_dir, f"{name}.png"), "PNG")
 
             os.remove(xlsx_path)
@@ -175,6 +198,7 @@ def create_group_sheets_single_column(groups, source_sheet, output_dir):
             continue
 
     print(f"группы сохранены в {output_dir}")
+
 
 def parse_and_generate_tables(INPUT_XLS):
     output_dir = "./app/output"

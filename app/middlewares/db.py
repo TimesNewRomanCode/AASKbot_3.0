@@ -7,7 +7,7 @@ class DbSessionMiddleware(BaseMiddleware):
 
     async def __call__(self, handler, event, data):
         agen = self.session_generator()
-        session = await anext(agen)  # забираем первый yield
+        session = await anext(agen)
         try:
             data["session"] = session
             return await handler(event, data)
