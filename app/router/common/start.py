@@ -5,8 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 start_router = Router()
 
-
 @start_router.message(CommandStart())
 async def message_handler(message: types.Message, session: AsyncSession):
     kb = await get_inline_kb(session)
-    await message.reply("Из какой вы группы?", reply_markup=kb)
+    await message.answer("Из какой вы группы?", reply_markup=kb)
