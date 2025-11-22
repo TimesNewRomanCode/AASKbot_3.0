@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 
 from app.core.create_bot import bot
-from app.crud.aaskUser import get_all_group_ids
+from app.repositories import user_repository
 
 load_dotenv()
 
@@ -41,18 +41,16 @@ async def handle_next_message(message: types.Message, state: FSMContext):
         await message.reply("Щаааа")
         try:
             async with AsyncSessionLocal() as session:
-                group_ids = await get_all_group_ids(session)
-                for group in group_ids:
-                    chat_id = group["chat_id"]
-                    group_name = group["group_name"]
+                users = await user_repository.get_all(session)
+                for user in users:
                     try:
-                        await bot.send_message(chat_id, user_message)
+                        await bot.send_message(user.chat_id, user_message)
                         print(
-                            f"Сообщение пользователю из {group_name} отправлено в чат {chat_id}."
+                            f"Сообщение пользователю из {user.group_name} отправлено в чат {user.chat_id}."
                         )
                     except Exception as e:
                         print(
-                            f"Ошибка при отправке сообщения для группы {group_name}: {e}"
+                            f"Ошибка при отправке сообщения для группы {user.group_name}: {e}"
                         )
         except Exception as e:
             print(f"Ошибка при получении данных из базы: {e}")

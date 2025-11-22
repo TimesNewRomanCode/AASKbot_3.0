@@ -1,9 +1,10 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.services.aaskUser import register_user
+from app.services.user import register_user
 
 answer_button_router = Router()
+
 
 @answer_button_router.callback_query(F.data.startswith("btn_"))
 async def process_order_callback(callback_query: CallbackQuery, session: AsyncSession):

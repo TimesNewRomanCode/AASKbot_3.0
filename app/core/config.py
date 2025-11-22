@@ -3,15 +3,15 @@ from pydantic import field_validator, computed_field
 
 
 class Settings(BaseSettings):
-    DB_DRIVER: str
-    DB_PROTOCOL: str
-    DB_USER: str
-    DB_PASSWORD: str
-    DB_HOST: str
-    DB_PORT: int
-    DB_NAME: str
+    DB_DRIVER: str = "asyncpg"
+    DB_PROTOCOL: str = "postgresql"
+    DB_USER: str = "user"
+    DB_PASSWORD: str = "password"
+    DB_HOST: str = "localhost"
+    DB_PORT: int = 5432
+    DB_NAME: str = "AASK"
 
-    BOT_TOKEN: str
+    BOT_TOKEN: str = "7988930302:AAEtl2VW5DLHllTZlcxjQQ2l6qOF9OTSgK0"
 
     @computed_field
     @property

@@ -1,7 +1,8 @@
 import asyncio
 from datetime import datetime, time, timedelta
 from aiogram import types
-from app.crud.aaskUser import get_all_group_ids
+
+from app.repositories import user_repository
 from app.core.database import AsyncSessionLocal
 from app.services.pars import download_and_generate_schedule
 from app.core.create_bot import bot
@@ -27,13 +28,11 @@ async def send_schedules():
     start_time = datetime.now()
     try:
         async with AsyncSessionLocal() as session:
-            group_ids = await get_all_group_ids(session)
-            for group in group_ids:
-                chat_id = group["chat_id"]
-                group_name = group["group_name"]
+            users = await user_repository.get_all(session)
+            for user in users:
                 script_dir = os.path.dirname(os.path.abspath(__file__))
                 file_path = os.path.join(
-                    script_dir, "..", "output", f"{group_name}.png"
+                    script_dir, "..", "output", f"{user.group_name}.png"
                 )
                 file_path = os.path.normpath(file_path)
 
@@ -46,12 +45,14 @@ async def send_schedules():
 
                 try:
                     await bot.send_photo(
-                        chat_id, types.FSInputFile(file_path), caption=caption
+                        user.chat_id, types.FSInputFile(file_path), caption=caption
                     )
-                    print(f"Расписание для {group_name} отправлено в чат {chat_id}")
+                    print(
+                        f"Расписание для {user.group_name} отправлено в чат {user.chat_id}"
+                    )
 
                 except Exception as e:
-                    print(f"Ошибка отправки для {group_name}: {e}")
+                    print(f"Ошибка отправки для {user.group_name}: {e}")
 
     except Exception as e:
         print(f"Ошибка при работе с базой данных: {e}")

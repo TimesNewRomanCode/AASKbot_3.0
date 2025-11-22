@@ -10,7 +10,7 @@ from datetime import datetime
 from app.core.database import AsyncSessionLocal
 import os
 from app.core.create_bot import bot
-from app.crud.aaskUser import get_all_group_ids
+from app.repositories import user_repository
 
 load_dotenv()
 
@@ -103,20 +103,17 @@ async def process_and_send_photos(
             return
 
         async with AsyncSessionLocal() as session:
-            group_ids = await get_all_group_ids(session)
+            users = await user_repository.get_all(session)
 
             successful_sends = 0
-            for group in group_ids:
-                chat_id = group["chat_id"]
-                group_name = group["group_name"]
-
+            for user in users:
                 try:
                     if len(photos_data) == 1:
                         await bot.send_photo(
-                            chat_id=chat_id,
+                            chat_id=user.chat_id,
                             photo=types.BufferedInputFile(
                                 photos_data[0]["bytes"],
-                                filename=f"photo_{group_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg",
+                                filename=f"photo_{user.group_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg",
                             ),
                             caption=photos_data[0]["caption"],
                         )
@@ -126,19 +123,21 @@ async def process_and_send_photos(
                             media_item = types.InputMediaPhoto(
                                 media=types.BufferedInputFile(
                                     photo_data["bytes"],
-                                    filename=f"photo_{group_name}_{i + 1}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg",
+                                    filename=f"photo_{user.group_name}_{i + 1}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg",
                                 ),
                                 caption=photo_data["caption"] if i == 0 else None,
                             )
                             media.append(media_item)
 
-                        await bot.send_media_group(chat_id=chat_id, media=media)
+                        await bot.send_media_group(chat_id=user.chat_id, media=media)
 
                     successful_sends += 1
-                    print(f"Успешно отправлено {len(photos_data)} фото в {group_name}")
+                    print(
+                        f"Успешно отправлено {len(photos_data)} фото в {user.group_name}"
+                    )
 
                 except Exception as e:
-                    print(f"Ошибка при отправке фото для {group_name}: {str(e)}")
+                    print(f"Ошибка при отправке фото для {user.group_name}: {str(e)}")
 
             if successful_sends > 0:
                 await messages[0].reply(

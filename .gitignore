@@ -9,7 +9,7 @@
 /.vs/
 /.venv/
 /app/output/
-
+*__pycache__
 
 # Игнорируемые файлы
 *.log
