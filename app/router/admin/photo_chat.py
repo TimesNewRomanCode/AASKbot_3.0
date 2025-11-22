@@ -7,9 +7,12 @@ from typing import List, Dict
 import asyncio
 from datetime import datetime
 
+from sqlalchemy.orm import joinedload
+
 from app.core.database import AsyncSessionLocal
 import os
 from app.core.create_bot import bot
+from app.models import User
 from app.repositories import user_repository
 
 load_dotenv()
@@ -103,7 +106,11 @@ async def process_and_send_photos(
             return
 
         async with AsyncSessionLocal() as session:
-            users = await user_repository.get_all(session)
+            users = await user_repository.get_all(
+                session,
+                filter_criteria=User.is_active,
+                custom_options=(joinedload(User.group),),
+            )
 
             successful_sends = 0
             for user in users:
