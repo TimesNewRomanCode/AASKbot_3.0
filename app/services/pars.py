@@ -178,18 +178,14 @@ def create_group_sheets_single_column(groups, source_sheet, output_dir):
                 img = images[0]
                 width, height = img.size
 
-
                 crop_top = int(height * 0.00)  # обрезать % сверху
                 crop_bottom = int(height * 0.10)  # обрезать % снизу
                 crop_left = int(width * 0.2588)  # обрезать % слева
                 crop_right = int(width * 0.10)  # обрезать % справа
 
-                cropped = img.crop((
-                    crop_left,
-                    crop_top,
-                    width - crop_right,
-                    height - crop_bottom
-                ))
+                cropped = img.crop(
+                    (crop_left, crop_top, width - crop_right, height - crop_bottom)
+                )
                 cropped.save(os.path.join(output_dir, f"{name}.png"), "PNG")
             os.remove(xlsx_path)
             os.remove(pdf_path)
