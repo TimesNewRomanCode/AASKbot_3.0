@@ -36,9 +36,12 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self,
         db: AsyncSession,
         custom_options: tuple[ExecutableOption, ...] | None = None,
+        filter_criteria: Any = None,
     ) -> Sequence[ModelType]:
         query = select(self.model)
 
+        if filter_criteria is not None:
+            query = query.where(filter_criteria)
         if custom_options is not None:
             query = query.options(*custom_options)
 

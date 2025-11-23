@@ -2,11 +2,14 @@ from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
+from sqlalchemy.orm import joinedload
+
 from app.core.database import AsyncSessionLocal
 import os
 from dotenv import load_dotenv
 
 from app.core.create_bot import bot
+from app.models import User
 from app.repositories import user_repository
 
 load_dotenv()
@@ -41,7 +44,11 @@ async def handle_next_message(message: types.Message, state: FSMContext):
         await message.reply("Щаааа")
         try:
             async with AsyncSessionLocal() as session:
-                users = await user_repository.get_all(session)
+                users = await user_repository.get_all(
+                    session,
+                    filter_criteria=User.is_active,
+                    custom_options=(joinedload(User.group),),
+                )
                 for user in users:
                     try:
                         await bot.send_message(user.chat_id, user_message)
