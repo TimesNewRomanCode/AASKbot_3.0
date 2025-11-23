@@ -6,7 +6,6 @@ from app.router.common import (
     start_router,
     answer_button_router,
 )
-from app.test.test_edit_fhoto import get_photo_test
 from app.router.admin import message_chat_all_router, photo_chat_all_router
 from app.core.database import get_session
 from app.middlewares.db import DbSessionMiddleware

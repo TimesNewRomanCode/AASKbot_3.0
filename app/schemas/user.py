@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class UserCreate(BaseModel):
-    chat_id: int
+    chat_id: str
     group_sid: UUID | None
     username: str | None
     is_active: bool | None
