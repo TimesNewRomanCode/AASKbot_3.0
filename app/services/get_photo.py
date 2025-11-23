@@ -2,7 +2,9 @@ import asyncio
 from datetime import datetime, time, timedelta
 from aiogram import types
 from aiogram.exceptions import TelegramForbiddenError
+from sqlalchemy.orm import joinedload
 
+from app.models import User
 from app.repositories import user_repository
 from app.core.database import AsyncSessionLocal
 from app.services.pars import download_and_generate_schedule
@@ -29,7 +31,11 @@ async def send_schedules():
     start_time = datetime.now()
     try:
         async with AsyncSessionLocal() as session:
-            users = await user_repository.get_all(session)
+            users = await user_repository.get_all(
+                session,
+                filter_criteria=User.is_active,
+                custom_options=(joinedload(User.group),),
+            )
             for user in users:
                 script_dir = os.path.dirname(os.path.abspath(__file__))
                 file_path = os.path.join(
