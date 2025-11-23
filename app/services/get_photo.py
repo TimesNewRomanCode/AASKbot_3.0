@@ -1,6 +1,7 @@
 import asyncio
 from datetime import datetime, time, timedelta
 from aiogram import types
+from aiogram.exceptions import TelegramForbiddenError
 
 from app.repositories import user_repository
 from app.core.database import AsyncSessionLocal
@@ -52,6 +53,9 @@ async def send_schedules():
                     )
 
                 except Exception as e:
+                    if isinstance(e, TelegramForbiddenError):
+                        user.is_active = False
+                        await session.commit()
                     print(f"Ошибка отправки для {user.group_name}: {e}")
 
     except Exception as e:
