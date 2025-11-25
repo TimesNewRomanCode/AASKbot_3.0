@@ -3,32 +3,20 @@ from datetime import datetime, time, timedelta
 from aiogram import types
 from aiogram.exceptions import TelegramForbiddenError
 from sqlalchemy.orm import joinedload
+import os
 
+from app.keyboards.keyboards_Reply import verification
 from app.models import User
 from app.repositories import user_repository
 from app.core.database import AsyncSessionLocal
-from app.services.pars import download_and_generate_schedule
 from app.core.create_bot import bot
-import os
-
-
-async def try_download_until_success(retry_interval=600):
-    attempt = 1
-    while True:
-        try:
-            print(f"Попытка скачивания #{attempt}")
-            await download_and_generate_schedule()
-            print("Скачивание успешно завершено!")
-            return True
-        except Exception as e:
-            print(f"Ошибка скачивания: {e}")
-            print(f"Следующая попытка через {retry_interval // 60} минут...")
-            attempt += 1
-            await asyncio.sleep(retry_interval)
 
 
 async def send_schedules():
     start_time = datetime.now()
+    users_found = 0
+    users_not_found = 0
+
     try:
         async with AsyncSessionLocal() as session:
             users = await user_repository.get_all(
@@ -36,27 +24,34 @@ async def send_schedules():
                 filter_criteria=User.is_active,
                 custom_options=(joinedload(User.group),),
             )
+
             for user in users:
-                script_dir = os.path.dirname(os.path.abspath(__file__))
-                file_path = os.path.join(
-                    script_dir, "..", "output", f"{user.group_name}.png"
-                )
+                today = datetime.now()
+                target_day = today + timedelta(days=1)
+                day_month = int(target_day.strftime("%d%m"))
+
+                # Упрощенный путь к файлу
+                file_path = f"./app/grop_photo/ААСК/{day_month}/{user.group_name}.png"
                 file_path = os.path.normpath(file_path)
 
                 if not os.path.exists(file_path):
                     print(f"Файл не найден: {file_path}")
+                    users_not_found += 1
                     continue
 
                 tomorrow = (datetime.now() + timedelta(days=1)).strftime("%d.%m.%Y")
                 caption = f"Расписание на {tomorrow}"
 
                 try:
+                    kb = verification()
                     await bot.send_photo(
-                        user.chat_id, types.FSInputFile(file_path), caption=caption
+                        user.chat_id,
+                        types.FSInputFile(file_path),
+                        caption=caption,
+                        reply_markup=kb
                     )
-                    print(
-                        f"Расписание для {user.group_name} отправлено в чат {user.chat_id}"
-                    )
+                    print(f"Расписание для {user.group_name} отправлено в чат {user.chat_id}")
+                    users_found += 1
 
                 except Exception as e:
                     if isinstance(e, TelegramForbiddenError):
@@ -68,14 +63,33 @@ async def send_schedules():
         print(f"Ошибка при работе с базой данных: {e}")
     finally:
         execution_time = datetime.now() - start_time
-        print(f"Время отправки: {execution_time}")
+        print(f"Отправлено: {users_found}, Не найдено: {users_not_found}, Время: {execution_time}")
+
+    return users_found > 0  # Возвращаем True если хотя бы одному пользователю отправили
+
+
+async def try_send_until_success(retry_interval=600):
+    """Пытается отправить расписание пока не получится"""
+    attempt = 1
+    while True:
+        print(f"Попытка отправки расписания #{attempt}")
+
+        success = await send_schedules()
+
+        if success:
+            print("Расписание успешно отправлено!")
+            return True
+
+        print(f"Файлы расписания не найдены. Следующая попытка через {retry_interval // 60} минут...")
+        attempt += 1
+        await asyncio.sleep(retry_interval)
 
 
 def get_next_valid_day(target_time):
     now = datetime.now()
     next_day = now + timedelta(days=1)
 
-    while next_day.weekday() in [4, 5]:
+    while next_day.weekday() in [4, 5]:  # Пятница и суббота
         next_day += timedelta(days=1)
 
     next_valid_day = datetime.combine(next_day.date(), target_time)
@@ -88,7 +102,6 @@ async def scheduled_task():
     start_time_today = time(6, 0)
     now = datetime.now()
 
-    # Проверяем, что бот инициализирован
     try:
         await bot.get_me()
     except Exception as e:
@@ -96,6 +109,7 @@ async def scheduled_task():
         await asyncio.sleep(60)
         return
 
+    # Проверяем выходные
     if now.weekday() in [4, 5]:
         next_valid_day = get_next_valid_day(start_time_today)
         wait_seconds = (next_valid_day - now).total_seconds()
@@ -105,20 +119,17 @@ async def scheduled_task():
         await asyncio.sleep(wait_seconds)
         return
 
+    # Ждем времени начала
     if now.time() < start_time_today:
         next_run = datetime.combine(now.date(), start_time_today)
         wait_seconds = (next_run - now).total_seconds()
-        print(
-            f"Ожидание начала попыток скачивания: {wait_seconds // 3600:.0f}ч {(wait_seconds % 3600) // 60:.0f}м"
-        )
+        print(f"Ожидание начала отправки: {wait_seconds // 3600:.0f}ч {(wait_seconds % 3600) // 60:.0f}м")
         await asyncio.sleep(wait_seconds)
 
-    print("Начинаем попытки скачивания...")
-    await try_download_until_success()
+    print("Начинаем попытки отправки расписания...")
+    await try_send_until_success()
 
-    print("Скачивание успешно! Отправляем расписание...")
-    await send_schedules()
-
+    # Планируем следующую задачу
     now_after_send = datetime.now()
     next_valid_day = get_next_valid_day(start_time_today)
 
@@ -126,14 +137,12 @@ async def scheduled_task():
     hours = int(wait_seconds // 3600)
     minutes = int((wait_seconds % 3600) // 60)
 
-    print(f"Расписание отправлено. Следующая попытка через {hours:02}ч {minutes:02}м")
+    print(f"Расписание отправлено. Следующая отправка через {hours:02}ч {minutes:02}м")
     await asyncio.sleep(wait_seconds)
 
 
 async def run_scheduler():
-    # Даем время боту инициализироваться перед запуском планировщика
     await asyncio.sleep(10)
-
     while True:
         try:
             await scheduled_task()

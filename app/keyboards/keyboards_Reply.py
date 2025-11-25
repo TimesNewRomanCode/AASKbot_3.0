@@ -5,8 +5,9 @@ def verification():
     return ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text="Да", callback_data=""),
-                KeyboardButton(text="Нет", callback_data=""),
+                KeyboardButton(text="Узнать рассписание"),
+                KeyboardButton(text="Изменить свою группу"),
+                KeyboardButton(text="Добавить ещё одну группу"),
             ],
         ],
         resize_keyboard=True,

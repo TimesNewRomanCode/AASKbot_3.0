@@ -16,20 +16,25 @@ GROUP_NAMES = []
 
 async def download_and_generate_schedule():
     today = datetime.now()
-    target_day = today + timedelta(days=1)
+    i = 0
+    while True:
+        try:
+            target_day = today + timedelta(days=i)
+            day_month = int(target_day.strftime("%d%m"))
+            url = f"https://altask.ru/images/raspisanie/DO/{day_month}.xls"
+            response = requests.get(url)
+            if response.status_code != 200:
+                raise Exception(f"Не удалось скачать файл по ссылке: {url}")
+            else:
+                file_path = f"{day_month}.xls"
+                with open(file_path, "wb") as f:
+                    f.write(response.content)
 
-    day_month = int(target_day.strftime("%d%m"))
-    url = f"https://altask.ru/images/raspisanie/DO/{day_month}.xls"
-    response = requests.get(url)
-    if response.status_code != 200:
-        raise Exception(f"Не удалось скачать файл по ссылке: {url}")
-    else:
-        file_path = f"{day_month}.xls"
-        with open(file_path, "wb") as f:
-            f.write(response.content)
-
-        await extract_group_names_from_xls(file_path)
-    parse_and_generate_tables(file_path)
+                await extract_group_names_from_xls(file_path)
+            i += 1
+            parse_and_generate_tables(file_path, day_month)
+        except Exception as e:
+            break
 
 
 async def extract_group_names_from_xls(file_path):
@@ -196,9 +201,8 @@ def create_group_sheets_single_column(groups, source_sheet, output_dir):
 
     print(f"группы сохранены в {output_dir}")
 
-
-def parse_and_generate_tables(INPUT_XLS):
-    output_dir = "./app/output"
+def parse_and_generate_tables(INPUT_XLS, day_month):
+    output_dir = f"./app/grop_photo/ААСК/{day_month}"
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
     convert_xls_to_xlsx(INPUT_XLS)
@@ -208,7 +212,7 @@ def parse_and_generate_tables(INPUT_XLS):
     create_group_sheets_single_column(groups, sheet, output_dir)
     if os.path.exists(INPUT_XLS):
         os.remove(INPUT_XLS)
+        print(f"[INFO] Удален исходный файл: {INPUT_XLS}")
     if os.path.exists(f"{INPUT_XLS}x"):
         os.remove(f"{INPUT_XLS}x")
-
     return True

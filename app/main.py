@@ -9,6 +9,7 @@ from app.router.common import (
 from app.router.admin import message_chat_all_router, photo_chat_all_router
 from app.core.database import get_session
 from app.middlewares.db import DbSessionMiddleware
+from app.services.pars import download_and_generate_schedule
 
 
 async def main():
@@ -25,6 +26,8 @@ async def main():
     )
 
     polling_task = asyncio.create_task(dp.start_polling(bot))
+    await asyncio.sleep(3)
+    await download_and_generate_schedule()
     scheduler_task = asyncio.create_task(run_scheduler())
 
     await asyncio.gather(polling_task, scheduler_task)
