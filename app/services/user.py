@@ -22,7 +22,7 @@ async def register_user(
         user.is_active = True
         await session.commit()
     else:
-        user = user_repository.create(
+        user = await user_repository.create(
             session,
             obj_in=UserCreate(
                 username=username, chat_id=chat_id, is_active=True, group_sid=group.sid
