@@ -30,7 +30,6 @@ async def send_schedules():
                 target_day = today + timedelta(days=1)
                 day_month = int(target_day.strftime("%d%m"))
 
-                # Упрощенный путь к файлу
                 file_path = f"./app/grop_photo/ААСК/{day_month}/{user.group_name}.png"
                 file_path = os.path.normpath(file_path)
 
@@ -65,11 +64,10 @@ async def send_schedules():
         execution_time = datetime.now() - start_time
         print(f"Отправлено: {users_found}, Не найдено: {users_not_found}, Время: {execution_time}")
 
-    return users_found > 0  # Возвращаем True если хотя бы одному пользователю отправили
+    return users_found > 0
 
 
 async def try_send_until_success(retry_interval=600):
-    """Пытается отправить расписание пока не получится"""
     attempt = 1
     while True:
         print(f"Попытка отправки расписания #{attempt}")
@@ -109,7 +107,6 @@ async def scheduled_task():
         await asyncio.sleep(60)
         return
 
-    # Проверяем выходные
     if now.weekday() in [4, 5]:
         next_valid_day = get_next_valid_day(start_time_today)
         wait_seconds = (next_valid_day - now).total_seconds()
@@ -119,7 +116,6 @@ async def scheduled_task():
         await asyncio.sleep(wait_seconds)
         return
 
-    # Ждем времени начала
     if now.time() < start_time_today:
         next_run = datetime.combine(now.date(), start_time_today)
         wait_seconds = (next_run - now).total_seconds()
@@ -129,7 +125,6 @@ async def scheduled_task():
     print("Начинаем попытки отправки расписания...")
     await try_send_until_success()
 
-    # Планируем следующую задачу
     now_after_send = datetime.now()
     next_valid_day = get_next_valid_day(start_time_today)
 
