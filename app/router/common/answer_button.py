@@ -1,6 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.services.user import register_user
 
 answer_button_router = Router()
@@ -17,7 +18,8 @@ async def process_order_callback(callback_query: CallbackQuery, session: AsyncSe
             username=callback_query.from_user.username or "unknown",
         )
         print("Новый пользователь", callback_query.from_user.username)
+
         await callback_query.message.edit_text(
-            text=f"Ваша группа {group_name}?",
+            text=f"Теперь вы будете получать рассписание группы {group_name}"
         )
         await callback_query.answer()

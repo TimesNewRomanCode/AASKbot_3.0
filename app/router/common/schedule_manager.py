@@ -12,9 +12,11 @@ schedule_manager = Router()
 class UserState(StatesGroup):
     current_date = State()
 
-@schedule_manager.message(Command("gallery"))
-async def start_gallery(message: types.Message):
+@schedule_manager.message(Command("schedule"))
+async def start_gallery(message: types.Message, state: FSMContext):
     chat_id = message.from_user.id
+
+    await state.update_data(current_date=datetime.now())
 
     photo_paths = await get_photo_paths_from_db(chat_id)
     await send_current_photo(chat_id, photo_paths)
@@ -53,7 +55,7 @@ async def handle_gallery_controls(callback: types.CallbackQuery, state: FSMConte
     )
 
     placeholder_media = InputMediaPhoto(
-        media="https://zooblog.ru/samye-smeshnye-zhivotnye-v-mire/",
+        media="https://i.pinimg.com/736x/b8/37/f0/b837f05af4779d60029b2aa327bd9050.jpg",
         caption=f"На дату {tomorrow} рассписания не найдено"
     )
 

@@ -5,7 +5,6 @@ from aiogram.exceptions import TelegramForbiddenError
 from sqlalchemy.orm import joinedload
 import os
 
-from app.keyboards.keyboards_Reply import verification
 from app.models import User
 from app.repositories import user_repository
 from app.core.database import AsyncSessionLocal
@@ -42,12 +41,10 @@ async def send_schedules():
                 caption = f"Расписание на {tomorrow}"
 
                 try:
-                    kb = verification()
                     await bot.send_photo(
                         user.chat_id,
                         types.FSInputFile(file_path),
                         caption=caption,
-                        reply_markup=kb
                     )
                     print(f"Расписание для {user.group_name} отправлено в чат {user.chat_id}")
                     users_found += 1
