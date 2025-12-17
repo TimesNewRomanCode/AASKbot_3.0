@@ -6,12 +6,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     libreoffice \
+    libreoffice-java-common \
     default-jre \
     poppler-utils \
+    fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-ENV PATH="$JAVA_HOME/bin:${PATH}"
+ENV JAVA_HOME=/usr/lib/jvm/default-java
+ENV HOME=/tmp
 
 COPY pyproject.toml poetry.lock ./
 
