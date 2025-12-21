@@ -16,6 +16,9 @@ GROUP_NAMES = []
 
 async def download_and_generate_schedule():
     today = datetime.now()
+    if today.weekday() == 6:
+        today += timedelta(days=1)
+
     i = 0
     while True:
         try:
