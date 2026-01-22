@@ -11,7 +11,10 @@ class Settings(BaseSettings):
     DB_PORT: int = 5432
     DB_NAME: str = "AASK"
 
+
     BOT_TOKEN: str = "1:A"
+
+    YOUR_CHAT_ID: int
 
     @computed_field
     @property
@@ -29,6 +32,7 @@ class Settings(BaseSettings):
         if len(parts) != 2:
             raise ValueError("Token must be in format '<bot_id>:<bot_key>'")
         return v
+
 
     model_config = SettingsConfigDict(
         env_file=".env",

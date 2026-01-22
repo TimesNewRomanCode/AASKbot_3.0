@@ -1,5 +1,6 @@
+from app.router.admin.get_url_for_def_pars import get_url_router
 from app.router.admin.message_chat import message_chat_all_router
 from app.router.admin.photo_chat import photo_chat_all_router
 
 
-__all__ = ["message_chat_all_router", "photo_chat_all_router"]
+__all__ = ["message_chat_all_router", "photo_chat_all_router", "get_url_router"]

@@ -5,6 +5,7 @@ from aiogram.exceptions import TelegramForbiddenError
 from sqlalchemy.orm import joinedload
 import os
 
+from app.core.config import settings
 from app.models import User
 from app.repositories import user_repository
 from app.core.database import AsyncSessionLocal
@@ -54,6 +55,11 @@ async def send_schedules():
                         user.is_active = False
                         await session.commit()
                     print(f"Ошибка отправки для {user.group_name}: {e}")
+
+            await bot.send_message(
+                chat_id=settings.YOUR_CHAT_ID,
+                text= f"Расписание отправлено в {users_found} чата"
+            )
 
     except Exception as e:
         print(f"Ошибка при работе с базой данных: {e}")

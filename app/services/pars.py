@@ -8,26 +8,36 @@ from pdf2image import convert_from_path
 import requests
 from datetime import datetime, timedelta
 from openpyxl.styles import Border, Side
+
+from app.core.config import settings
+from app.core.create_bot import bot
 from app.services.groups import up_groups
 from app.core.database import AsyncSessionLocal
 
 GROUP_NAMES = []
 
 
-async def download_and_generate_schedule():
+async def download_and_generate_schedule(manual_url: str = None):
     today = datetime.now()
     if today.weekday() == 6:
         today += timedelta(days=1)
-
     i = 0
     while True:
         try:
             target_day = today + timedelta(days=i)
             day_month = int(target_day.strftime("%d%m"))
-            url = f"https://altask.ru/images/raspisanie/DO/{day_month}.xls"
+            if manual_url:
+                url = manual_url
+                manual_url = None
+            else:
+                url = f"https://altask.ru/images/raspisanie/DO/{day_month}.xls"
             response = requests.get(url)
-            if response.status_code != 200:
-                raise Exception(f"Не удалось скачать файл по ссылке: {url}")
+            if response.status_code != 200 and i == 0:
+                raise Exception(
+                    await bot.send_message(
+                        chat_id=settings.YOUR_CHAT_ID,
+                        text= f"Не удалось скачать файл по ссылке: {url}"
+                    ))
             else:
                 file_path = f"{day_month}.xls"
                 with open(file_path, "wb") as f:
