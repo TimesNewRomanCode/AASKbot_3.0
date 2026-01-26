@@ -10,56 +10,67 @@ from app.models import User
 from app.repositories import user_repository
 from app.core.database import AsyncSessionLocal
 from app.core.create_bot import bot
+from app.services.sender_logs import quick_create_log, get_has_today_log
 
 
 async def send_schedules():
     start_time = datetime.now()
     users_found = 0
     users_not_found = 0
+    result_log_fount = 0
 
     try:
         async with AsyncSessionLocal() as session:
-            users = await user_repository.get_all(
-                session,
-                filter_criteria=User.is_active,
-                custom_options=(joinedload(User.group),),
-            )
+            result_log = await get_has_today_log(session)
+        if result_log:
+            async with AsyncSessionLocal() as session:
+                users = await user_repository.get_all(
+                    session,
+                    filter_criteria=User.is_active,
+                    custom_options=(joinedload(User.group),),
+                )
 
-            for user in users:
-                today = datetime.now()
-                target_day = today + timedelta(days=1)
-                day_month = int(target_day.strftime("%d%m"))
+                for user in users:
+                    today = datetime.now()
+                    target_day = today + timedelta(days=1)
+                    day_month = int(target_day.strftime("%d%m"))
 
-                file_path = f"./app/grop_photo/ААСК/{day_month}/{user.group_name}.png"
-                file_path = os.path.normpath(file_path)
+                    file_path = f"./app/grop_photo/ААСК/{day_month}/{user.group_name}.png"
+                    file_path = os.path.normpath(file_path)
 
-                if not os.path.exists(file_path):
-                    print(f"Файл не найден: {file_path}")
-                    users_not_found += 1
-                    continue
+                    if not os.path.exists(file_path):
+                        print(f"Файл не найден: {file_path}")
+                        users_not_found += 1
+                        continue
 
-                tomorrow = (datetime.now() + timedelta(days=1)).strftime("%d.%m.%Y")
-                caption = f"Расписание на {tomorrow}"
+                    tomorrow = (datetime.now() + timedelta(days=1)).strftime("%d.%m.%Y")
+                    caption = f"Расписание на {tomorrow}"
 
-                try:
-                    await bot.send_photo(
-                        user.chat_id,
-                        types.FSInputFile(file_path),
-                        caption=caption,
-                    )
-                    print(f"Расписание для {user.group_name} отправлено в чат {user.chat_id}")
-                    users_found += 1
+                    try:
+                        await bot.send_photo(
+                            user.chat_id,
+                            types.FSInputFile(file_path),
+                            caption=caption,
+                        )
+                        print(f"Расписание для {user.group_name} отправлено в чат {user.chat_id}")
+                        users_found += 1
 
-                except Exception as e:
-                    if isinstance(e, TelegramForbiddenError):
-                        user.is_active = False
-                        await session.commit()
-                    print(f"Ошибка отправки для {user.group_name}: {e}")
+                    except Exception as e:
+                        if isinstance(e, TelegramForbiddenError):
+                            user.is_active = False
+                            await session.commit()
+                        print(f"Ошибка отправки для {user.group_name}: {e}")
 
-            await bot.send_message(
-                chat_id=settings.YOUR_CHAT_ID,
-                text= f"Расписание отправлено в {users_found} чата"
-            )
+                await bot.send_message(
+                    chat_id=settings.YOUR_CHAT_ID,
+                    text= f"Расписание отправлено в {users_found} чата"
+                )
+                async with AsyncSessionLocal() as session:
+                    await quick_create_log(session)
+        elif result_log == False:
+            result_log_fount = 1
+
+
 
     except Exception as e:
         print(f"Ошибка при работе с базой данных: {e}")
@@ -67,7 +78,7 @@ async def send_schedules():
         execution_time = datetime.now() - start_time
         print(f"Отправлено: {users_found}, Не найдено: {users_not_found}, Время: {execution_time}")
 
-    return users_found > 0
+    return users_found > 0 or result_log_fount > 0
 
 
 async def try_send_until_success(retry_interval=600):
