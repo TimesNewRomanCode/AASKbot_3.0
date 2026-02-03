@@ -6,6 +6,7 @@ from sqlalchemy.orm import joinedload
 import os
 
 from app.core.config import settings
+from app.keyboards.is_newsletter_keyboards import newsletter_of
 from app.models import User
 from app.repositories import user_repository
 from app.core.database import AsyncSessionLocal
@@ -31,6 +32,9 @@ async def send_schedules():
                 )
 
                 for user in users:
+                    if not user.is_newsletter:
+                        continue
+
                     today = datetime.now()
                     target_day = today + timedelta(days=1)
                     day_month = int(target_day.strftime("%d%m"))
@@ -47,10 +51,12 @@ async def send_schedules():
                     caption = f"Расписание на {tomorrow}"
 
                     try:
+                        kb = newsletter_of()
                         await bot.send_photo(
                             user.chat_id,
                             types.FSInputFile(file_path),
                             caption=caption,
+                            reply_markup=kb,
                         )
                         print(f"Расписание для {user.group_name} отправлено в чат {user.chat_id}")
                         users_found += 1

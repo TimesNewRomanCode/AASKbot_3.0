@@ -21,6 +21,7 @@ class User(CoreModel):
     )
     username: Mapped[str] = mapped_column(String, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+    is_newsletter: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
 
     group: Mapped["Group"] = relationship("Group", back_populates="users")
     group_name = association_proxy("group", "name")

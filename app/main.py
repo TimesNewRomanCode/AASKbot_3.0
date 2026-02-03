@@ -7,7 +7,7 @@ from app.core.create_bot import bot, dp
 from app.router.common import (
     start_router,
     answer_button_router,
-    schedule_manager,
+    schedule_manager, newsletter_router,
 )
 from app.router.admin import message_chat_all_router, photo_chat_all_router, get_url_router
 from app.core.database import get_session
@@ -28,7 +28,8 @@ async def main():
         message_chat_all_router,
         photo_chat_all_router,
         schedule_manager,
-        get_url_router
+        get_url_router,
+        newsletter_router
     )
     await set_commands(bot)
     parser_task = asyncio.create_task(run_parser_at(5, 30))
