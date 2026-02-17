@@ -25,3 +25,5 @@ class User(CoreModel):
 
     group: Mapped["Group"] = relationship("Group", back_populates="users")
     group_name = association_proxy("group", "name")
+    address_name = association_proxy("group", "address_name")
+    college_name = association_proxy("group", "college_name")

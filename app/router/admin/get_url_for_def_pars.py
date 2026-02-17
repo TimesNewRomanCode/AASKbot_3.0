@@ -6,7 +6,7 @@ from aiogram.fsm.state import State, StatesGroup
 import os
 from dotenv import load_dotenv
 
-from app.services.pars import download_and_generate_schedule
+from app.services.services_for_parsing.pars_aask import parse_aask
 
 load_dotenv()
 
@@ -38,5 +38,5 @@ async def handle_next_message(message: types.Message, state: FSMContext):
         await state.clear()
     else:
         manual_url = user_message
-        await download_and_generate_schedule(manual_url)
+        await parse_aask.download_and_generate_schedule(manual_url)
         await state.clear()

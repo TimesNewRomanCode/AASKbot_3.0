@@ -1,10 +1,12 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from app.services.groups import get_groups_array
+from app.services.services_for_models.groups import get_groups_array
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-async def get_inline_kb(session: AsyncSession) -> InlineKeyboardMarkup:
-    groups = await get_groups_array(session)
+async def get_inline_kb_for_group(
+    session: AsyncSession, address_name: str
+) -> InlineKeyboardMarkup:
+    groups = await get_groups_array(session, address_name)
     if not groups:
         groups = ["Нет групп"]
 

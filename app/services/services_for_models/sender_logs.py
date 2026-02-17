@@ -13,6 +13,7 @@ async def quick_create_log(session: AsyncSession):
     await session.refresh(new_log)
     return new_log
 
+
 async def get_has_today_log(session: AsyncSession):
     last_date = await sender_logs_repository.get_sender_logs(session)
 

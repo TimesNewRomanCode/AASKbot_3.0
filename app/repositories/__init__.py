@@ -1,3 +1,5 @@
 from .group_repository import group_repository as group_repository
 from .user_repository import user_repository as user_repository
 from .sender_logs import sender_logs_repository as sender_logs_repository
+from .college_repository import college_repository as college_repository
+from .address_repository import address_repository as address_repository

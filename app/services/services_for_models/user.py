@@ -5,10 +5,7 @@ from app.schemas.user import UserCreate
 
 
 async def register_user(
-    session: AsyncSession,
-    chat_id: int,
-    group_name: str,
-    username: str
+    session: AsyncSession, chat_id: int, group_name: str, username: str
 ):
     chat_id = str(chat_id)
     group = await group_repository.get_group_by_name(session, group_name)
@@ -30,6 +27,7 @@ async def register_user(
         )
 
     return user
+
 
 async def newsletter_true_for_user(
     session: AsyncSession,

@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm.strategy_options import selectinload
+from sqlalchemy.orm.strategy_options import joinedload
 
 from app.common.db.base_repository import BaseRepository
-from app.models import User
+from app.models import User, Group, Address
 from app.schemas.user import UserCreate, UserUpdate
 
 
@@ -12,7 +12,11 @@ class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
     async def get_by_chat_id(session: AsyncSession, chat_id: int):
         stmt = (
             select(User)
-            .options(selectinload(User.group))
+            .options(
+                joinedload(User.group)
+                .joinedload(Group.address)
+                .joinedload(Address.college),
+            )  # todo посмотреть как правильно
             .where(User.chat_id == chat_id)
         )
         result = await session.execute(stmt)

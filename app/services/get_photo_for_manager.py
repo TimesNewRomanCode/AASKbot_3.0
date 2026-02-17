@@ -1,4 +1,3 @@
-from aiofiles import os
 from aiogram.types import FSInputFile
 from app.core.create_bot import bot
 from app.core.database import AsyncSessionLocal
@@ -25,13 +24,13 @@ async def send_current_photo(chat_id, photo_paths):
             chat_id=chat_id,
             photo=FSInputFile(photo_path),
             caption=tomorrow,
-            reply_markup=keyboard
+            reply_markup=keyboard,
         )
-    except Exception as e:
+    except Exception:
         await bot.send_message(
             chat_id=chat_id,
             text=f"На дату {tomorrow} рассписание не найденно",
-            reply_markup=keyboard
+            reply_markup=keyboard,
         )
 
 
@@ -39,7 +38,7 @@ async def get_photo_paths_from_db(chat_id: int) -> list:
     try:
         async with AsyncSessionLocal() as session:
             user = await user_repository.get_by_chat_id(session, str(chat_id))
-            folder_path = "app/grop_photo/ААСК/"
+            folder_path = f"app/grop_photo/{user.college_name}/{user.address_name}/"
             group_path = f"/{user.group_name}.png"
             return [folder_path, group_path]
 
