@@ -59,7 +59,7 @@ async def process_order_callback_for_group(
         print("Новый пользователь", callback_query.from_user.username)
         await bot.send_message(
             chat_id=settings.YOUR_CHAT_ID,
-            text=f"Новый пользователь{callback_query.from_user.username}",
+            text=f"Новый пользователь @{callback_query.from_user.username}",
         )
         await callback_query.message.edit_text(
             text=f"Теперь вы будете получать расписание группы {group_name}, вы всегда можете отписаться от рассылки"

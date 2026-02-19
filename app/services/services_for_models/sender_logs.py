@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime, date, time
 
 from app.models import SenderLogs
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,5 +16,5 @@ async def quick_create_log(session: AsyncSession):
 
 async def get_has_today_log(session: AsyncSession):
     last_date = await sender_logs_repository.get_sender_logs(session)
-
-    return last_date != date.today()
+    today_midnight = datetime.combine(date.today(), time.min)
+    return last_date != today_midnight

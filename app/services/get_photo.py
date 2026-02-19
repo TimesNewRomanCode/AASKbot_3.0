@@ -27,8 +27,7 @@ async def send_schedules():
     try:
         async with AsyncSessionLocal() as session:
             result_log = await get_has_today_log(session)
-        if result_log:
-            async with AsyncSessionLocal() as session:
+            if result_log:
                 users = await user_repository.get_all(
                     session,
                     filter_criteria=User.is_active,
@@ -58,14 +57,14 @@ async def send_schedules():
                     caption = f"Расписание на {tomorrow}"
 
                     try:
-
-                        kb = newsletter_of()
+                        chat_id = user.chat_id
+                        kb = await newsletter_of(session, chat_id)
                         menu_key = menu
                         await bot.send_photo(
-                            user.chat_id,
+                            chat_id,
                             types.FSInputFile(file_path),
                             caption=caption,
-                            reply_markup=menu_key,
+                            reply_markup=kb,
                         )
 
                         print(
@@ -83,10 +82,9 @@ async def send_schedules():
                     chat_id=settings.YOUR_CHAT_ID,
                     text=f"Расписание отправлено в {users_found} чата",
                 )
-                async with AsyncSessionLocal() as session:
-                    await quick_create_log(session)
-        else:
-            result_log_fount = 1
+                await quick_create_log(session)
+            else:
+                result_log_fount = 1
 
     except Exception as e:
         print(f"Ошибка при работе с базой данных: {e}")
