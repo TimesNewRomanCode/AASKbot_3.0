@@ -121,7 +121,6 @@ class ParsAask:
                         if ly >= sheet.nrows:
                             ly = sheet.nrows - 1
                         result.append({"group": value, "x": x, "y1": y + 1, "y2": ly})
-            print(result)
             return result
         except Exception as e:
             print(f"[!] Ошибка чтения .xls: {e}")
