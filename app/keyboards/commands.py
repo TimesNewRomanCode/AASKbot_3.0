@@ -5,7 +5,7 @@ async def set_commands(bot):
     commands = [
         BotCommand(command="start", description="Изменить свою группу"),
         BotCommand(command="schedule", description="Узнать свое расписание"),
-        BotCommand(command="newsletter_no", description="Отписаться от рассылку расписания"),
+        BotCommand(command="newsletter_no", description="Отписаться от рассылки расписания"),
         BotCommand(command="newsletter_yes", description="Подписаться на рассылку расписания"),
     ]
 

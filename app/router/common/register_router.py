@@ -64,4 +64,8 @@ async def process_order_callback_for_group(
         await callback_query.message.edit_text(
             text=f"Теперь вы будете получать расписание группы {group_name}, вы всегда можете отписаться от рассылки"
         )
+        await callback_query.message.answer(
+            "Удачного использования!",
+            reply_markup=menu
+        )
         await callback_query.answer()

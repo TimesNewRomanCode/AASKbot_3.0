@@ -66,7 +66,11 @@ async def send_schedules():
                             caption=caption,
                             reply_markup=kb,
                         )
-
+                        await bot.send_message(
+                            chat_id,
+                            text="Хорошего дня!",
+                            reply_markup=menu_key
+                        )
                         print(
                             f"Расписание для {user.group_name} отправлено в чат {user.chat_id}"
                         )
