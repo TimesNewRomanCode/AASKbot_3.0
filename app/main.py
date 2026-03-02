@@ -8,6 +8,7 @@ from app.router.common import (
     newsletter_router,
     schedule_manager,
     register_router,
+    schedule_manager_by_group
 )
 from app.router.admin import (
     message_chat_all_router,
@@ -34,6 +35,7 @@ async def main():
         schedule_manager,
         get_url_router,
         newsletter_router,
+        schedule_manager_by_group,
     )
     await set_commands(bot)
     parser_task = asyncio.create_task(run_parser_at(5, 30))
@@ -44,6 +46,7 @@ async def main():
     scheduler_task = asyncio.create_task(run_scheduler())
 
     await asyncio.gather(polling_task, parser_task, scheduler_task)
-
+# await parse_aag.run()
+    # await parse_aask.download_and_generate_schedule()
     logging.info("Бот завершает работу.")
     await bot.delete_webhook(drop_pending_updates=True)

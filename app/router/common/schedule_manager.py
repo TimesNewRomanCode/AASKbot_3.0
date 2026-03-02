@@ -17,13 +17,17 @@ class UserState(StatesGroup):
     current_date = State()
 
 
-@schedule_manager.message(or_f(Command("schedule"), F.text == "Узнать расписание"))
+@schedule_manager.message(or_f(Command("schedule"), F.text == "Моё расписание"))
 async def start_gallery(message: types.Message, state: FSMContext):
-    chat_id = message.from_user.id
+
 
     await state.update_data(current_date=datetime.now())
-
+    chat_id = message.from_user.id
+    print(chat_id)
     photo_paths = await get_photo_paths_from_db(chat_id)
+
+    chat_id = message.chat.id
+    print(chat_id)
     await send_current_photo(chat_id, photo_paths)
 
 

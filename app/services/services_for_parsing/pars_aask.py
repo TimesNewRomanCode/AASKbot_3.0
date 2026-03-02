@@ -206,8 +206,8 @@ class ParsAask:
 
                     crop_top = int(height * 0.00)  # обрезать % сверху
                     crop_bottom = int(height * 0.10)  # обрезать % снизу
-                    crop_left = int(width * 0.2588)  # обрезать % слева
-                    crop_right = int(width * 0.10)  # обрезать % справа
+                    crop_left = int(width * 0.15)  # обрезать % слева
+                    crop_right = int(width * 0.15)  # обрезать % справа
 
                     cropped = img.crop(
                         (crop_left, crop_top, width - crop_right, height - crop_bottom)

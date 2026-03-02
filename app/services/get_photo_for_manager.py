@@ -1,7 +1,7 @@
 from aiogram.types import FSInputFile
 from app.core.create_bot import bot
 from app.core.database import AsyncSessionLocal
-from app.keyboards.schedule_manager_keyboards import get_gallery_keyboard
+from app.keyboards.schedule_manager_keyboards import get_gallery_keyboard, get_gallery_keyboard_by_group
 from datetime import datetime, timedelta
 from app.repositories.user_repository import user_repository
 
@@ -33,6 +33,32 @@ async def send_current_photo(chat_id, photo_paths):
             reply_markup=keyboard,
         )
 
+async def send_current_photo_by_group(chat_id, photo_paths):
+    today = datetime.now()
+    day_month = int(today.strftime("%d%m"))
+    tomorrow = (datetime.now() - timedelta(days=0)).strftime("%d.%m.%Y")
+
+    if not photo_paths:
+        await bot.send_message(chat_id, "Пока рассписания нет")
+        return
+
+    photo_path = f"{photo_paths[0]}{day_month}{photo_paths[1]}"
+    print(photo_path)
+    keyboard = get_gallery_keyboard_by_group()
+
+    try:
+        await bot.send_photo(
+            chat_id=chat_id,
+            photo=FSInputFile(photo_path),
+            caption=tomorrow,
+            reply_markup=keyboard,
+        )
+    except Exception:
+        await bot.send_message(
+            chat_id=chat_id,
+            text=f"На дату {tomorrow} рассписание не найденно",
+            reply_markup=keyboard,
+        )
 
 async def get_photo_paths_from_db(chat_id: int) -> list:
     try:
@@ -40,6 +66,18 @@ async def get_photo_paths_from_db(chat_id: int) -> list:
             user = await user_repository.get_by_chat_id(session, str(chat_id))
             folder_path = f"app/grop_photo/{user.college_name}/{user.address_name}/"
             group_path = f"/{user.group_name}.png"
+            return [folder_path, group_path]
+
+    except Exception as e:
+        print(f"Ошибка при получении путей фото: {e}")
+        return []
+
+async def get_photo_paths_from_db_by_group(chat_id: int, group_name: str) -> list:
+    try:
+        async with AsyncSessionLocal() as session:
+            user = await user_repository.get_by_chat_id(session, str(chat_id))
+            folder_path = f"app/grop_photo/{user.college_name}/{user.address_name}/"
+            group_path = f"/{group_name}.png"
             return [folder_path, group_path]
 
     except Exception as e:

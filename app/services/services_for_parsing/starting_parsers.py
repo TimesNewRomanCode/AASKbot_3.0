@@ -27,8 +27,8 @@ async def run_parser_at(target_hour: int, target_minute: int):
 
         print("Запускаем парсер...")
         try:
-            await parse_aask.download_and_generate_schedule()
             await parse_aag.run()
+            await parse_aask.download_and_generate_schedule()
             print("Парсинг завершен.")
         except Exception as e:
             print(f"Ошибка парсинга: {e}")
