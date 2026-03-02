@@ -61,25 +61,20 @@ async def send_current_photo_by_group(chat_id, photo_paths):
         )
 
 async def get_photo_paths_from_db(chat_id: int) -> list:
-    try:
-        async with AsyncSessionLocal() as session:
-            user = await user_repository.get_by_chat_id(session, str(chat_id))
-            folder_path = f"app/grop_photo/{user.college_name}/{user.address_name}/"
-            group_path = f"/{user.group_name}.png"
-            return [folder_path, group_path]
 
-    except Exception as e:
-        print(f"Ошибка при получении путей фото: {e}")
-        return []
+    async with AsyncSessionLocal() as session:
+        user = await user_repository.get_by_chat_id(session, str(chat_id))
+        folder_path = f"app/grop_photo/{user.college_name}/{user.address_name}/"
+        group_path = f"/{user.group_name}.png"
+        return [folder_path, group_path]
+
 
 async def get_photo_paths_from_db_by_group(chat_id: int, group_name: str) -> list:
-    try:
-        async with AsyncSessionLocal() as session:
-            user = await user_repository.get_by_chat_id(session, str(chat_id))
-            folder_path = f"app/grop_photo/{user.college_name}/{user.address_name}/"
-            group_path = f"/{group_name}.png"
-            return [folder_path, group_path]
 
-    except Exception as e:
-        print(f"Ошибка при получении путей фото: {e}")
-        return []
+    async with AsyncSessionLocal() as session:
+        user = await user_repository.get_by_chat_id(session, str(chat_id))
+        folder_path = f"app/grop_photo/{user.college_name}/{user.address_name}/"
+        group_path = f"/{group_name}.png"
+        return [folder_path, group_path]
+
+

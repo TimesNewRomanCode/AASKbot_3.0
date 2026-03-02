@@ -192,7 +192,7 @@ class AAGParser:
                     if day < self.TODAY.day:
                         target_date = target_date + timedelta(days=30)
 
-                    day_month = target_date.strftime("%d%m")
+                    day_month = f"{target_date.day}{target_date.month:02d}"
 
                     save_dir = self.ROOT_SAVE_DIR / site_folder / day_month
                     save_dir.mkdir(parents=True, exist_ok=True)
