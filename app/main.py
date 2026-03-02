@@ -46,7 +46,7 @@ async def main():
     scheduler_task = asyncio.create_task(run_scheduler())
 
     await asyncio.gather(polling_task, parser_task, scheduler_task)
-# await parse_aag.run()
-    # await parse_aask.download_and_generate_schedule()
+    await parse_aag.run()
+    await parse_aask.download_and_generate_schedule()
     logging.info("Бот завершает работу.")
     await bot.delete_webhook(drop_pending_updates=True)
